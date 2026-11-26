@@ -1,5 +1,15 @@
 # Changelog
 
+## 未发布
+
+- 新增 `examples/`：4 份真实描述（社区体检、早产随访、夜间急诊、拒食追问）与对应输出存档，来源写在 `cases.json`
+- 新增集成测试 22 条：起 `http.server` 用原始 socket 发请求、起子进程跑 CLI、回读示例结论；总数 56（34 单测 + 22 集成）
+- 修 #4：`POST /api/check` 收到截断或非法 JSON 从 500 改为 400，不再把 `json` 解析器原文返回给前端；兜底 500 只回「服务器内部错误」
+- `do_POST` 改为先把请求体读完再判路径，未知路径与非法 JSON 共用同一条读体路径
+- 关闭 #3（误判）：handler 默认 HTTP/1.0，响应后即关连接，复用连接上的 10053 不是残留 body 造成，结论记在 `docs/regression-map.md`
+- CI 增加 docker job：`packages: write` 只在 job 级，多架构推到 GHCR；Dockerfile 补 OCI label
+- 换成真实录屏示例 GIF
+
 ## 0.1.0
 
 - 初始版本，仓库随 0.1.0 首次提交

@@ -41,6 +41,23 @@ docker build -t yuer .
 docker run -p 8000:8000 yuer
 ```
 
+## 📂 Real examples
+
+Four descriptions and their outputs live in the repo; copy them to reproduce:
+
+| Input | Where it came from | What to check |
+|---|---|---|
+| [`examples/case-01.txt`](examples/case-01.txt) | A community checkup sheet, an 8-month boy's numbers repeated verbatim | All three measures land in P15–P85; the word "thin" should not drive the verdict |
+| [`examples/case-02.txt`](examples/case-02.txt) | A preterm follow-up group question, born at 32 weeks, now 6 months | Growth uses corrected 4.0 months; vaccines still follow chronological 6 months |
+| [`examples/case-03.txt`](examples/case-03.txt) | A parent calling before the night ER, 2-year-old, 38.5°C, listless | A red flag must end at "see a doctor now" |
+| [`examples/case-04.txt`](examples/case-04.txt) | A group follow-up, 15-month girl on milk only for a week | Refusing food is also a red flag; the checklist flags missing urine output |
+
+```bash
+python -m yuer --mock check --file examples/case-01.txt
+```
+
+Full outputs are archived under `examples/out/case-0N.md`; sources and expectations live in [`examples/cases.json`](examples/cases.json).
+
 ## 🤔 Why not just ask a general LLM
 
 A general model says "9 kg at 8 months is normal". It cannot give the percentile, and it will not tell you the next dose is meningococcal at 9 months. Four differences:
@@ -174,7 +191,10 @@ yuer/
 │   └── web.py      # single page + JSON API
 ├── data/growth.json     # anchor medians + spread factors
 ├── data/milestones.json # 13 vaccines + 5 feeding stages + 7 flags
-├── tests/test_yuer.py
+├── examples/            # 4 real inputs + cases.json + out/ outputs
+├── docs/regression-map.md # issue → test name
+├── tests/test_yuer.py        # 34 unit tests
+├── tests/test_integration.py # 22 integration tests
 └── assets/demo.gif
 ```
 
@@ -184,7 +204,7 @@ yuer/
 python -m unittest discover tests -v
 ```
 
-34 tests cover local logic only: sex and age parsing, jin/kg, preterm correction, interpolation midpoints and edges, five buckets, schedule and feeding boundaries, age-aware red flags, offline pipeline and number stripping. CI runs them on 3.10/3.11/3.12.
+56 tests: 34 units cover local logic only (sex and age parsing, jin/kg, preterm correction, interpolation midpoints and edges, five buckets, schedule and feeding boundaries, age-aware red flags, offline pipeline and number stripping); 22 integration tests hit real things — a live `http.server` probed over raw sockets, `python -m yuer` as a subprocess, and the four `examples/` cases re-checked against their expected conclusions. CI runs 3.10/3.11/3.12 and pushes a multi-arch image to GHCR.
 
 ## 👤 Author
 

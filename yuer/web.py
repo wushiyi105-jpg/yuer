@@ -113,13 +113,14 @@ def _handler(db, cfg, force_mock):
             self._send(json.dumps(obj, ensure_ascii=False).encode("utf-8"),
                        "application/json; charset=utf-8", status)
 
-        def _read(self):
-            raw = self.rfile.read(int(self.headers.get("Content-Length", 0)))
+        def _raw(self):
+            # 先把请求体读干净,不管后面怎么处理:留在连接里的 body 会在 keep-alive 复用时
+            # 被当成下一个请求的起始行,客户端收到 WinError 10053
+            raw = self.rfile.read(int(self.headers.get("Content-Length", 0) or 0))
             try:
-                text = raw.decode("utf-8")
+                return raw.decode("utf-8")
             except UnicodeDecodeError:
-                text = raw.decode("gbk", errors="replace")
-            return json.loads(text) if text else {}
+                return raw.decode("gbk", errors="replace")
 
         def do_GET(self):
             path = urlparse(self.path).path
@@ -132,18 +133,24 @@ def _handler(db, cfg, force_mock):
                 self._json({"error": "not found"}, 404)
 
         def do_POST(self):
+            text = self._raw()
             if urlparse(self.path).path != "/api/check":
                 self._json({"error": "not found"}, 404)
                 return
             try:
-                body = self._read()
+                body = json.loads(text) if text else {}
+            except ValueError:
+                # 截断或非法 JSON 是调用方的问题,回 400,不要回 500 再加解析器原文
+                self._json({"error": "请求体不是合法 JSON"}, 400)
+                return
+            try:
                 r = agent.check(body.get("text", ""), config=cfg, db=db,
                                 force_mock=force_mock, save=True)
                 self._json(r)
             except llm.LLMError as e:
                 self._json({"error": str(e)}, 400)
-            except Exception as e:  # noqa: BLE001
-                self._json({"error": str(e)}, 500)
+            except Exception:  # noqa: BLE001
+                self._json({"error": "服务器内部错误"}, 500)
 
         def log_message(self, *args):
             pass

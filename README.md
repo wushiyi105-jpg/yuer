@@ -41,6 +41,23 @@ docker build -t yuer .
 docker run -p 8000:8000 yuer
 ```
 
+## 📂 真实示例
+
+四份描述和对应输出都在仓库里,照抄能复现:
+
+| 输入 | 来源 | 看什么 |
+|---|---|---|
+| [`examples/case-01.txt`](examples/case-01.txt) | 社区儿保体检单,家长把 8 个月男孩的数字原样转述 | 三项都落 P15–P85,「偏瘦」两个字不该把结论带走 |
+| [`examples/case-02.txt`](examples/case-02.txt) | 早产儿随访群的提问,32 周早产生、现在 6 个月 | 生长按矫正 4.0 月查,接种仍按实际 6 月龄排 |
+| [`examples/case-03.txt`](examples/case-03.txt) | 夜间急诊前家长电话口述,2 岁发烧 38.5℃、精神差 | 命中红线,结论必须落到立即就医 |
+| [`examples/case-04.txt`](examples/case-04.txt) | 育儿群追问,15 个月女孩一周只喝奶 | 拒食同样进红线,问诊清单标出缺尿量与体温 |
+
+```bash
+python -m yuer --mock check --file examples/case-01.txt
+```
+
+每条输出的完整存档在 `examples/out/case-0N.md`;四条的来源与「该验证什么」写在 [`examples/cases.json`](examples/cases.json)。
+
 ## 🤔 为什么不用通用大模型直接问
 
 通用模型会说「8 个月男宝 9 kg 正常」。它给不出百分位,也不会告诉你下一针是 9 月龄的 A 群流脑。差别在四点:
@@ -174,7 +191,10 @@ yuer/
 │   └── web.py      # 单页 + JSON API
 ├── data/growth.json     # 锚点中位数 + 离散系数
 ├── data/milestones.json # 13 条疫苗 + 5 段喂养 + 7 条红线
-├── tests/test_yuer.py
+├── examples/            # 4 份真实描述 + cases.json + out/ 输出存档
+├── docs/regression-map.md # issue → 测试名对照
+├── tests/test_yuer.py       # 34 条单测
+├── tests/test_integration.py # 22 条集成
 └── assets/demo.gif
 ```
 
@@ -184,7 +204,7 @@ yuer/
 python -m unittest discover tests -v
 ```
 
-34 个单测只测本地逻辑:性别与月龄解析、斤/公斤、早产与矫正、插值端点与中点、分档五种、接种与喂养边界、红线按年龄触发、离线全流程、数值剥离。CI 在 3.10/3.11/3.12 上跑。
+共 56 条:34 条单测只测本地逻辑(性别与月龄解析、斤/公斤、早产与矫正、插值端点与中点、分档五种、接种与喂养边界、红线按年龄触发、离线全流程、数值剥离);22 条集成测真东西——起 http.server 用原始 socket 发请求、起子进程跑 `python -m yuer`、读 `examples/` 里四份示例核结论。CI 在 3.10/3.11/3.12 上跑,并构建多架构镜像推到 GHCR。
 
 ## 👤 作者
 
