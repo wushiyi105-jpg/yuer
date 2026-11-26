@@ -1,23 +1,13 @@
-# Changelog
+# 更新记录
 
-## 未发布
+## 1.0.0
 
-- 新增 `examples/`：4 份真实描述（社区体检、早产随访、夜间急诊、拒食追问）与对应输出存档，来源写在 `cases.json`
-- 新增集成测试 22 条：起 `http.server` 用原始 socket 发请求、起子进程跑 CLI、回读示例结论；总数 56（34 单测 + 22 集成）
-- 修 #4：`POST /api/check` 收到截断或非法 JSON 从 500 改为 400，不再把 `json` 解析器原文返回给前端；兜底 500 只回「服务器内部错误」
-- `do_POST` 改为先把请求体读完再判路径，未知路径与非法 JSON 共用同一条读体路径
-- 关闭 #3（误判）：handler 默认 HTTP/1.0，响应后即关连接，复用连接上的 10053 不是残留 body 造成，结论记在 `docs/regression-map.md`
-- CI 增加 docker job：`packages: write` 只在 job 级，多架构推到 GHCR；Dockerfile 补 OCI label
-- 换成真实录屏示例 GIF
-
-## 0.1.0
-
-- 初始版本，仓库随 0.1.0 首次提交
-- 生长百分位带：0/3/6/9/12/18/24 月锚点线性插值，给出 P3、P15、P50、P85、P97 与本次落点
-- 早产矫正月龄：矫正月龄 = 实足月龄 − (40 − 出生孕周) ÷ 4，小于 37 周才矫正
-- 国家免疫规划 13 条，标出自费项
-- 5 段喂养区间：0–6 月纯奶、6–8 月泥糊、9–11 月末状、12–17 月三餐、18–24 月三餐两点
-- 7 条红线与问诊 5 问，缺项标黄
-- 模型只写解释，月龄、厘米、公斤、温度一律剥离
-- 只给参考区间与分流，不给用药与剂量
-- Web 单页 + CLI 双入口，无 key 走离线模式
+- 新栈重写：WHO 百分位插值（男女分开）、月龄剂次表（22 剂次，0–60 月龄）
+- 体重/身高分档出 `growth.weight_band` / `growth.height_band`，单点不判趋势
+- 疫苗：`vaccine.overdue` / `vaccine.upcoming`，按生日算建议日期
+- 提醒任务 `jobs` 表 + `remind`，提前 7 天，同一天只发一条，`--force` 可重发
+- `export` 导出 CSV（日期 / 体重 / 身高 / 疫苗 / 剂次）给医生
+- 摘要守卫 `guard`：诊断、用药、可能是、疑似等整句丢弃，`note` 命令强制过守卫
+- Alembic `0001_init` + `migrate`（0.x `checks` 表先备份再转换，生日按月龄反推，需人工核对）
+- CLI：growth / vaccine / mark / note / remind / export / migrate / serve / doctor
+- 测试 28 条，覆盖插值边界、提醒幂等、CSV、迁移、守卫、Web

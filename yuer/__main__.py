@@ -1,3 +1,4 @@
-from .cli import main
+from .iface.cli import app
 
-main()
+if __name__ == "__main__":
+    app(prog_name="yuer")

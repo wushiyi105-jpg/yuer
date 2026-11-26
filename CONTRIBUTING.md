@@ -1,30 +1,21 @@
-# 贡献指南
+# 参与
 
-感谢你有兴趣参与 smartcook 的开发。
-
-## 本地运行
+## 本地跑起来
 
 ```bash
-git clone https://github.com/wushiyi105-jpg/smartcook.git
-cd smartcook
-cp .env.example .env        # 填入你自己的 LLM_API_KEY(项目不自带 key)
-python -m smartcook --help
+uv sync --extra dev
+uv run yuer doctor
+uv run pytest -q
 ```
 
-## 运行测试
+## 提 PR 之前
 
-```bash
-python -m unittest discover tests -v
-```
+1. 规则改动必须落在 `yuer/domain/rules/`，并且新增一条 `rule_id`；
+2. 每条 `rule_id` 至少一条断言；
+3. 输出给家长的文案必须过 `domain/guard.py`，诊断 / 用药 / 疑似一律整句丢；
+4. `ruff check .`、`mypy yuer`、`pytest -q` 全过；
+5. 改表结构就加一条 `migrations/versions/`，写清 up/down。
 
-## 提交 PR
+## 提交信息
 
-1. fork 本仓库
-2. 从 main 拉一个功能分支
-3. 改动并本地跑通测试(必须全绿)
-4. 提交 PR,写清楚改了什么、为什么
-
-## 约定
-
-- 零第三方依赖,只用 Python 标准库
-- 保持「硬事实本地算、软判断交给模型」的现有分工
+`type: 一句话说清改了什么`，type 用 feat / fix / docs / test / refactor。
