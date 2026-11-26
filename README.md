@@ -41,7 +41,7 @@ docker build -t yuer .
 docker run -p 8000:8000 yuer
 ```
 
-## 🤔 为什么不能直接问通用大模型
+## 🤔 为什么不用通用大模型直接问
 
 通用模型会说「8 个月男宝 9 kg 正常」。它给不出百分位,也不会告诉你下一针是 9 月龄的 A 群流脑。差别在四点:
 
@@ -109,7 +109,7 @@ python -m yuer --json check --text "..."
 python -m yuer --mock check --text "..."
 ```
 
-## 🔌 模型配置
+## 🔌 模型接入
 
 兼容 **OpenAI `/chat/completions`** 的任意服务:
 
@@ -190,6 +190,6 @@ python -m unittest discover tests -v
 
 shiyi · GitHub [@wushiyi105-jpg](https://github.com/wushiyi105-jpg) · [wushiyi105@gmail.com](mailto:wushiyi105@gmail.com)
 
-## 📄 许可
+## 📄 License
 
 [MIT](./LICENSE)

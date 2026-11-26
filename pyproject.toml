@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "yuer"
 version = "0.1.0"
-description = "宝宝成长 Agent —— 百分位、矫正月龄、疫苗日历、问诊清单"
+description = "育儿 · 生长与喂养参考 · 百分位、矫正月龄、疫苗日历、问诊清单"
 requires-python = ">=3.10"
 license = {text = "MIT"}
 
