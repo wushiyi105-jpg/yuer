@@ -6,6 +6,7 @@ from datetime import date
 
 from yuer.app.run import export_rows, save_growth
 from yuer.domain.models import Child, Measurement
+from yuer.ports import StorePort
 
 
 class FakeStore:
@@ -40,7 +41,7 @@ class FakeStore:
 
 
 def test_save_growth_and_export_with_fake_store() -> None:
-    store = FakeStore()
+    store: StorePort = FakeStore()
     child = Child(id=1, name="宝宝", birth_on=date(2025, 1, 1), sex="girl")
     m = Measurement(on=date(2026, 11, 27), weight_kg=12.3, height_cm=88.0)
     cid = save_growth(store, child, m)
