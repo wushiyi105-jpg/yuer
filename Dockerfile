@@ -14,7 +14,7 @@ RUN pip install --upgrade pip build && pip wheel --no-deps -w /wheels . && \
     pip install --prefix=/install "fastapi>=0.115" "uvicorn[standard]>=0.30" \
       "python-multipart>=0.0.9" "pydantic>=2.7" "pydantic-settings>=2.3" \
       "httpx>=0.27" "jinja2>=3.1" "typer>=0.12" "rich>=13.7" \
-      "sqlalchemy>=2.0" "alembic>=1.13"
+      "sqlalchemy>=2.0" "alembic>=1.13" "tomli>=2"
 
 FROM python:3.10-slim
 
