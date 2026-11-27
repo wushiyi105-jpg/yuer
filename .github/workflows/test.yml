@@ -44,6 +44,9 @@ jobs:
           uv run coverage run -m pytest -q
           uv run coverage report --fail-under=70
 
+      - name: Audit
+        run: uv run pip-audit --path "$(uv run python -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])')"
+
   docker:
     runs-on: ubuntu-latest
     steps:

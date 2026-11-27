@@ -120,6 +120,12 @@ yuer/
 └── .github/workflows/test.yml
 ```
 
+## 质量与供应链
+
+- CI 的 Coverage 步骤带 `--fail-under=70`，覆盖率低于 70% 直接失败。
+- `tests/test_app_fake.py` 用真实 `InMemoryStore` 跑主用例，并显式标注 `StorePort` 交给 mypy 做结构校验；测试不创建 SQLite 文件。
+- Audit 步骤用 `pip-audit --path` 扫描虚拟环境的 site-packages，跳过本地可编辑包；第三方依赖有漏洞就让 job 失败，不用 `|| true` 吞错。
+
 ## 作者
 
 大钊 · GitHub [@wushiyi105-jpg](https://github.com/wushiyi105-jpg) · 17382987315

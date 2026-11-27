@@ -9,7 +9,7 @@ from yuer.domain.models import Child, Measurement
 from yuer.ports import StorePort
 
 
-class FakeStore:
+class InMemoryStore:
     def __init__(self) -> None:
         self.child_list: list[Child] = []
         self.measures: list[Measurement] = []
@@ -41,7 +41,7 @@ class FakeStore:
 
 
 def test_save_growth_and_export_with_fake_store() -> None:
-    store: StorePort = FakeStore()
+    store: StorePort = InMemoryStore()
     child = Child(id=1, name="宝宝", birth_on=date(2025, 1, 1), sex="girl")
     m = Measurement(on=date(2026, 11, 27), weight_kg=12.3, height_cm=88.0)
     cid = save_growth(store, child, m)
