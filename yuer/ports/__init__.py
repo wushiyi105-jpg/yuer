@@ -9,6 +9,11 @@ from ..domain.models import Child, Measurement
 
 
 @runtime_checkable
+class LLMPort(Protocol):
+    def write(self, system: str, facts: str) -> str: ...
+
+
+@runtime_checkable
 class StorePort(Protocol):
     def add_child(self, name: str, birth_on: date, sex: str) -> int: ...
 

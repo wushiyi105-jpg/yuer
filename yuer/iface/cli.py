@@ -10,12 +10,15 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
+from ..adapters.llm import build_llm
 from ..adapters.store import Store
 from ..app.run import (
+    NOTE_PROMPT,
     export_rows,
     growth_report,
     guarded_note,
     mark_vaccine,
+    model_note,
     save_growth,
     vaccine_plan,
 )
@@ -132,11 +135,19 @@ def note(
     db: Path = typer.Option(None),
 ) -> None:
     """给家长看的一段话（过摘要守卫，不出现诊断/用药）。"""
+    settings = _settings(db)
     birth_on = date.fromisoformat(birth)
     measured_on = date.fromisoformat(on) if on else date.today()
     child = Child(id=1, name="宝宝", birth_on=birth_on, sex=sex)
     report = growth_report(child, Measurement(on=measured_on, weight_kg=weight, height_cm=height), set(), measured_on)
-    text, dropped = guarded_note(report)
+    llm = (
+        build_llm(settings.llm_base_url, settings.llm_api_key, settings.llm_model, NOTE_PROMPT)
+        if settings.llm_enabled
+        else None
+    )
+    text, dropped = model_note(report, llm)
+    if not text:
+        text, dropped = guarded_note(report)
     console.print(text or "[yellow]整段都被守卫拦下，只保留结论：请带记录去儿保门诊[/]")
     if dropped:
         console.print(f"[yellow]已丢弃 {len(dropped)} 句越界表述[/]")

@@ -10,7 +10,12 @@ from ..domain.models import Child, GrowthReport, Measurement
 from ..domain.remind import vaccine_reminder
 from ..domain.rules import vaccine as vx
 from ..domain.summary import care_note
-from ..ports import StorePort
+from ..ports import LLMPort, StorePort
+
+NOTE_PROMPT = (
+    "你是育儿记录助手。只根据给定评估事实写 2-3 句给家长看的中文说明，"
+    "不给诊断、不推荐用药、不编造数字，最后提醒带记录去儿保门诊。"
+)
 
 
 def growth_report(child: Child, m: Measurement, done: set[str], on: date) -> GrowthReport:
@@ -35,6 +40,16 @@ def mark_vaccine(store: StorePort, child_id: int, code: str, dose: int, done_on:
 def guarded_note(report: GrowthReport) -> tuple[str, list[str]]:
     text, dropped = guard(care_note(report))
     return text or "", dropped
+
+
+def model_note(report: GrowthReport, llm: LLMPort | None = None) -> tuple[str, list[str]]:
+    if llm is None:
+        return "", []
+    try:
+        raw = llm.write(NOTE_PROMPT, care_note(report))
+    except Exception:  # noqa: BLE001 模型失败回本地说明
+        return "", []
+    return guard(raw)
 
 
 def reminder(store: StorePort, today: date, ahead_days: int = 7) -> str:
