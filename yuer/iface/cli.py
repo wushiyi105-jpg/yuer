@@ -11,8 +11,18 @@ from rich.console import Console
 from rich.table import Table
 
 from ..adapters.store import Store
+from ..app.run import (
+    export_rows,
+    growth_report,
+    guarded_note,
+    mark_vaccine,
+    save_growth,
+    vaccine_plan,
+)
+from ..app.run import (
+    reminder as build_reminder,
+)
 from ..config import settings as base_settings
-from ..domain.engine import evaluate
 from ..domain.models import Child, Measurement
 from ..domain.rules import vaccine as vx
 
@@ -42,10 +52,9 @@ def growth(
     m = Measurement(on=measured_on, weight_kg=weight, height_cm=height)
 
     store = Store(_settings(db).db_path)
-    report = evaluate(child, m, store.done_codes(1), measured_on)
+    report = growth_report(child, m, store.done_codes(1), measured_on)
     if save:
-        store.add_child(child.name, birth_on, sex)
-        store.add_measurement(1, m)
+        save_growth(store, child, m)
 
     if as_json:
         console.print_json(json.dumps({
@@ -77,12 +86,10 @@ def vaccine(
     """按月龄列出待种与逾期。"""
     birth_on = date.fromisoformat(birth)
     today = date.fromisoformat(on) if on else date.today()
-    months = vx.age_months(birth_on, today)
     store = Store(_settings(db).db_path)
     done = store.done_codes(1)
 
-    missing = vx.overdue(done, months)
-    soon = vx.upcoming(months)
+    months, missing, soon = vaccine_plan(birth_on, today, done)
     if as_json:
         console.print_json(json.dumps({
             "age_months": months,
@@ -111,7 +118,7 @@ def mark(
 ) -> None:
     """记录一次接种。"""
     store = Store(_settings(db).db_path)
-    store.add_vaccination(1, code, dose, date.fromisoformat(on) if on else date.today())
+    mark_vaccine(store, 1, code, dose, date.fromisoformat(on) if on else date.today())
     console.print(f"[green]已记录[/] {code} 第 {dose} 剂")
 
 
@@ -125,14 +132,11 @@ def note(
     db: Path = typer.Option(None),
 ) -> None:
     """给家长看的一段话（过摘要守卫，不出现诊断/用药）。"""
-    from ..domain.guard import guard
-    from ..domain.summary import care_note
-
     birth_on = date.fromisoformat(birth)
     measured_on = date.fromisoformat(on) if on else date.today()
     child = Child(id=1, name="宝宝", birth_on=birth_on, sex=sex)
-    report = evaluate(child, Measurement(on=measured_on, weight_kg=weight, height_cm=height), set(), measured_on)
-    text, dropped = guard(care_note(report))
+    report = growth_report(child, Measurement(on=measured_on, weight_kg=weight, height_cm=height), set(), measured_on)
+    text, dropped = guarded_note(report)
     console.print(text or "[yellow]整段都被守卫拦下，只保留结论：请带记录去儿保门诊[/]")
     if dropped:
         console.print(f"[yellow]已丢弃 {len(dropped)} 句越界表述[/]")
@@ -141,16 +145,13 @@ def note(
 @app.command()
 def remind(db: Path = typer.Option(None), force: bool = typer.Option(False, "--force")) -> None:
     """疫苗提醒：逾期与 7 天内到期，同一天只发一条。"""
-    from ..domain.remind import vaccine_reminder
-
     settings = _settings(db)
     store = Store(settings.db_path)
     children = store.children()
     if not children:
         console.print("[yellow]还没有孩子记录，先跑一次 growth --save[/]")
         return
-    done = {c.id: store.done_codes(c.id) for c in children}
-    text = vaccine_reminder(children, done, date.today(), settings.remind_ahead_days)
+    text = build_reminder(store, date.today(), settings.remind_ahead_days)
     if not text:
         console.print("[green]今天没有疫苗要提醒[/]")
         return
@@ -179,14 +180,7 @@ def export(
     import io
 
     store = Store(_settings(db).db_path)
-    rows: list[list[str]] = [["日期", "体重kg", "身高cm", "疫苗", "剂次"]]
-    for m in store.measurements(child_id):
-        rows.append([m.on.isoformat(), str(m.weight_kg or ""), str(m.height_cm or ""), "", ""])
-    for code in sorted(store.done_codes(child_id)):
-        if "#" not in code:
-            continue
-        base, dose = code.split("#", 1)
-        rows.append(["", "", "", base, dose])
+    rows = export_rows(store, child_id)
     buf = io.StringIO()
     csv.writer(buf).writerows(rows)
     if out:
@@ -229,13 +223,14 @@ def doctor(db: Path = typer.Option(None)) -> None:
 
 
 @app.command()
-def serve(port: int = typer.Option(8000), db: Path = typer.Option(None)) -> None:
+def serve(port: int = typer.Option(0, help="0 表示用配置里的 8022"), db: Path = typer.Option(None)) -> None:
     """Web 界面。"""
     import uvicorn
 
     from .web import app_factory
 
-    uvicorn.run(app_factory(_settings(db)), host="127.0.0.1", port=port)
+    settings = _settings(db)
+    uvicorn.run(app_factory(settings), host="127.0.0.1", port=port or settings.port)
 
 
 if __name__ == "__main__":  # pragma: no cover

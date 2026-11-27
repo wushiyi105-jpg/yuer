@@ -20,11 +20,11 @@ uv sync --extra dev
 uv run yuer growth --birth 2025-11-27 --sex boy --weight 9.6 --height 75.0
 uv run yuer vaccine --birth 2025-11-27
 uv run yuer note --birth 2025-11-27 --weight 9.6     # 给家长的一段话，过守卫
-uv run yuer serve        # http://127.0.0.1:8000
+uv run yuer serve        # http://127.0.0.1:8022
 ```
 
 实测 2025-11-27 出生、2026-11-27（12 月龄）测 9.6kg / 75cm：体重 P50.0、身高 P42.5，都在正常档；疫苗按生日推 12 月龄的水痘建议日期 2026-11-27。
-本仓 28 条测试，行覆盖 84%。
+本仓 33 条测试，行覆盖 84%。
 
 ## 为什么不用通用大模型直接问
 
@@ -74,7 +74,7 @@ yuer note --birth 2025-11-27 [--weight kg] [--height cm]     # 过 guard 的一�
 yuer remind [--force] [--db 路径]                            # 逾期 + 7 天内，幂等
 yuer export [--child-id 1] [--out records.csv] [--db 路径]
 yuer migrate [--db 路径]
-yuer serve [--port 8000] [--db 路径]
+yuer serve [--port 8022] [--db 路径]
 yuer doctor [--db 路径]                                      # 配置 / 数据库 / 疫苗表 / 模型 / webhook
 ```
 
@@ -82,7 +82,7 @@ yuer doctor [--db 路径]                                      # 配置 / 数据
 
 运行时：`fastapi`、`uvicorn`、`jinja2`、`python-multipart`、`pydantic` + `pydantic-settings`（前缀 `YER_`）、`httpx`、`typer` + `rich`、`sqlalchemy` + `alembic`。
 开发：`pytest`、`pytest-cov`、`ruff`（line-length 100）、`mypy`。
-Python ≥3.10；镜像 `python:3.10-slim`，两阶段，`EXPOSE 8000`。
+Python ≥3.10；镜像 `python:3.10-slim`，两阶段，`EXPOSE 8022`。
 
 ## 工作原理
 
@@ -116,7 +116,7 @@ yuer/
 ├── migrations/          # alembic env + versions/0001_init.py
 ├── templates/
 ├── tests/               # 28 条：插值 / 剂次 / 提醒 / 导出 / 守卫 / 迁移 / 接口
-├── Dockerfile           # python:3.10-slim，EXPOSE 8000
+├── Dockerfile           # python:3.10-slim，EXPOSE 8022
 └── .github/workflows/test.yml
 ```
 

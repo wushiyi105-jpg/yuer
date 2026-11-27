@@ -9,8 +9,8 @@ from fastapi import FastAPI, Form, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
+from ..app.run import growth_report
 from ..config import Settings
-from ..domain.engine import evaluate
 from ..domain.models import Child, Measurement
 from ..domain.rules import vaccine as vx
 
@@ -43,7 +43,7 @@ def create_app(settings: Settings) -> FastAPI:
             weight_kg=float(weight) if weight.strip() else None,
             height_cm=float(height) if height.strip() else None,
         )
-        report = evaluate(child, m, set(), today)
+        report = growth_report(child, m, set(), today)
         months = vx.age_months(birth_on, today)
         result = {
             "months": months,

@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_prefix="YER_", extra="ignore")
 
     db_path: Path = Path("data/yuer.db")
+    port: int = 8022
     llm_base_url: str = "https://api.deepseek.com"
     llm_api_key: str = ""
     llm_model: str = "deepseek-flash"
