@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- WHO 表补全为男女各 61 个月（0–60 全月龄），新增区间输出 P25–P50 / <P3 / >P97
+- 新增 11 个体检节点与每节点 3 个问题；`checkup` 一次输出清单并写 `.ics`（22 个接种事件，提前 7 天提醒）
+- 趋势按日期去重，同一天重复保存不再出现"9.2→9.2"
 - `0001_init` 改为显式 `op.create_table` / `op.create_index`，运行期走 `alembic upgrade`
 - `app/` 只依赖 `ports`，新增内存假实现用例
 - 开 ruff `E2`/`E3`；CI 增加 `docker build` 与 `/health` 探活

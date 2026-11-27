@@ -6,39 +6,21 @@
 
 from __future__ import annotations
 
-SOURCE = "WHO Child Growth Standards (2006)，0–60 月龄节选，近似值"
+import json
+from pathlib import Path
 
-# 月龄 -> (P3, P50, P97)，体重 kg
-WEIGHT = {
-    "boy": {
-        0: (2.5, 3.3, 4.4), 1: (3.4, 4.5, 5.8), 2: (4.3, 5.6, 7.1),
-        3: (5.0, 6.4, 8.0), 6: (6.4, 7.9, 9.8), 9: (7.1, 8.9, 10.9),
-        12: (7.8, 9.6, 11.8), 18: (8.8, 10.9, 13.5), 24: (9.7, 12.2, 15.3),
-        36: (11.3, 14.3, 18.3), 48: (12.7, 16.3, 21.2), 60: (14.1, 18.3, 24.2),
-    },
-    "girl": {
-        0: (2.4, 3.2, 4.2), 1: (3.2, 4.2, 5.5), 2: (3.9, 5.1, 6.6),
-        3: (4.5, 5.8, 7.5), 6: (5.7, 7.3, 9.2), 9: (6.5, 8.2, 10.5),
-        12: (7.1, 8.9, 11.3), 18: (8.1, 10.2, 13.0), 24: (9.0, 11.5, 14.8),
-        36: (10.8, 13.9, 18.1), 48: (12.3, 16.1, 21.5), 60: (13.7, 18.2, 25.0),
-    },
-}
+DATA = Path(__file__).resolve().parents[3] / "data" / "who_growth.json"
+_RAW = json.loads(DATA.read_text(encoding="utf-8"))
+SOURCE = str(_RAW["source"])
 
-# 月龄 -> (P3, P50, P97)，身高 cm
-HEIGHT = {
-    "boy": {
-        0: (46.1, 49.9, 53.7), 1: (51.1, 54.7, 58.4), 2: (54.7, 58.4, 62.2),
-        3: (57.6, 61.4, 65.3), 6: (63.6, 67.6, 71.6), 9: (67.7, 72.0, 76.2),
-        12: (71.3, 75.7, 80.2), 18: (76.9, 82.3, 87.7), 24: (81.7, 87.8, 93.9),
-        36: (88.7, 96.1, 103.5), 48: (94.9, 103.3, 111.7), 60: (100.7, 110.0, 119.2),
-    },
-    "girl": {
-        0: (45.4, 49.1, 52.9), 1: (50.0, 53.7, 57.4), 2: (53.2, 57.1, 61.0),
-        3: (55.8, 59.8, 63.8), 6: (61.2, 65.7, 70.3), 9: (65.3, 70.1, 75.0),
-        12: (68.9, 74.0, 79.2), 18: (74.9, 80.7, 86.5), 24: (80.0, 86.4, 92.9),
-        36: (87.4, 95.1, 102.7), 48: (94.1, 102.7, 111.3), 60: (99.9, 109.4, 118.9),
-    },
-}
+
+def _table(group: str, sex: str) -> dict[int, tuple[float, float, float]]:
+    return {int(month): tuple(row) for month, row in _RAW[group][sex].items()}
+
+
+# 0–60 月龄逐月表，体重 kg / 身高 cm，每项为 (P3, P50, P97)
+WEIGHT = {sex: _table("weight", sex) for sex in ("boy", "girl")}
+HEIGHT = {sex: _table("height", sex) for sex in ("boy", "girl")}
 
 
 def interpolate(table: dict[int, tuple[float, float, float]], months: float) -> tuple[float, float, float]:
@@ -75,3 +57,16 @@ def band(pct: float) -> str:
     if pct > 97:
         return "high"
     return "normal"
+
+
+def interval(pct: float) -> str:
+    """给区间，不给单点：P25–P50 这种，避免家长盯一个数。"""
+    edges = [3, 10, 25, 50, 75, 90, 97]
+    if pct < edges[0]:
+        return "<P3"
+    if pct > edges[-1]:
+        return ">P97"
+    for lo, hi in zip(edges, edges[1:]):
+        if lo <= pct < hi:
+            return f"P{lo}–P{hi}"
+    return f"P{edges[-2]}–P{edges[-1]}"

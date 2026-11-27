@@ -12,6 +12,7 @@ from rich.table import Table
 
 from ..adapters.llm import build_llm
 from ..adapters.store import Store
+from ..app.report import build_checkup, vaccine_ics
 from ..app.run import (
     NOTE_PROMPT,
     export_rows,
@@ -77,6 +78,49 @@ def growth(
     for f in report.findings:
         color = "red" if f.severity == "high" else "yellow" if f.severity == "warn" else "cyan"
         console.print(f"  · [{color}]{f.rule_id}[/] {f.message}")
+
+
+@app.command()
+def checkup(
+    birth: str = typer.Option(..., help="出生日期 YYYY-MM-DD"),
+    sex: str = typer.Option("boy", help="boy / girl"),
+    name: str = typer.Option("宝宝", help="孩子名字"),
+    weight: float = typer.Option(None, help="体重 kg"),
+    height: float = typer.Option(None, help="身高 cm"),
+    on: str = typer.Option(None, help="体检日期，默认今天"),
+    save: bool = typer.Option(False, "--save", help="把这次测量写进本地库"),
+    out: Path = typer.Option(None, help="输出 Markdown；同时写同名 .ics 疫苗日历"),
+    db: Path = typer.Option(None),
+) -> None:
+    """体检前问题清单 + 疫苗日历 ICS，一次成文。"""
+    birth_on = date.fromisoformat(birth)
+    day = date.fromisoformat(on) if on else date.today()
+    store = Store(_settings(db).db_path)
+    children = store.children()
+    child_id = children[0].id if children else 1
+    if save:
+        if not children:
+            child_id = store.add_child(name, birth_on, sex)
+        store.add_measurement(child_id, Measurement(on=day, weight_kg=weight, height_cm=height))
+    child = Child(id=child_id, name=name, birth_on=birth_on, sex=sex)
+    m = Measurement(on=day, weight_kg=weight, height_cm=height)
+    report = growth_report(child, m, store.done_codes(child_id), day)
+    history = store.measurements(child_id)
+    if not save:
+        history = [*history, m]
+
+    body = build_checkup(report, history, day, name)
+    ics = vaccine_ics(name, birth_on, day)
+    if out:
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(body, encoding="utf-8")
+        ics_path = out.with_suffix(".ics")
+        ics_path.write_text(ics, encoding="utf-8")
+        console.print(
+            f"[green]已写出[/] {out}（{len(body.splitlines())} 行）与 {ics_path.name}（22 个接种事件）"
+        )
+    else:
+        console.print(body)
 
 
 @app.command()
