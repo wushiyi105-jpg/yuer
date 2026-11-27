@@ -24,7 +24,7 @@ uv run yuer serve        # http://127.0.0.1:8022
 ```
 
 实测 2025-11-27 出生、2026-11-27（12 月龄）测 9.6kg / 75cm：体重 P50.0、身高 P42.5，都在正常档；疫苗按生日推 12 月龄的水痘建议日期 2026-11-27。
-本仓 33 条测试，行覆盖 84%。
+本仓 33 条测试，行覆盖 85%。
 
 ## 为什么不用通用大模型直接问
 
@@ -122,4 +122,4 @@ yuer/
 
 ## 作者
 
-shiyi · GitHub [@wushiyi105-jpg](https://github.com/wushiyi105-jpg) · wushiyi105@gmail.com
+大钊 · GitHub [@wushiyi105-jpg](https://github.com/wushiyi105-jpg) · 17382987315
