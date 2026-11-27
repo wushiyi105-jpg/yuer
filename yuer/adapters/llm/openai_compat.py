@@ -21,7 +21,7 @@ class OpenAICompatLLM:
         system_prompt: str,
         timeout: float = 30.0,
         retries: int = 2,
-        max_tokens: int = 500,
+        max_tokens: int = 2000,
     ) -> None:
         self.base_url = base_url.rstrip("/")
         self.api_key = api_key
