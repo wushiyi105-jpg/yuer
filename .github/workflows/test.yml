@@ -43,3 +43,19 @@ jobs:
         run: |
           uv run coverage run -m pytest -q
           uv run coverage report --fail-under=70
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build image
+        run: docker build -t ci-app .
+      - name: Run and check /health
+        run: |
+          docker run -d --name ci-app -p 8022:8022 ci-app
+          ok=0
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8022/health >/dev/null; then ok=1; break; fi
+            sleep 2
+          done
+          if [ "$ok" != "1" ]; then docker logs ci-app; exit 1; fi
