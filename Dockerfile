@@ -5,6 +5,7 @@ WORKDIR /app
 
 COPY pyproject.toml README.md ./
 COPY yuer ./yuer
+COPY data ./data
 COPY templates ./templates
 COPY migrations ./migrations
 COPY alembic.ini ./
@@ -24,6 +25,7 @@ WORKDIR /app
 COPY --from=builder /install /usr/local
 COPY --from=builder /app/templates ./templates
 COPY --from=builder /app/yuer ./yuer
+COPY --from=builder /app/data ./data
 COPY --from=builder /app/migrations ./migrations
 COPY --from=builder /app/alembic.ini ./
 
