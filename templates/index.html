@@ -1,71 +1,53 @@
-<!doctype html>
-<html lang="zh-CN">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>yuer · 成长与疫苗</title>
-<style>
-  :root{--bg:#0d1117;--card:#161b22;--line:#30363d;--ink:#e6edf3;--muted:#8b949e;--accent:#58a6ff;--ok:#3fb950}
-  *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Microsoft YaHei",sans-serif;line-height:1.6}
-  .wrap{max-width:720px;margin:0 auto;padding:40px 20px 80px}
-  h1{font-size:26px;margin:0 0 4px}
-  .sub{color:var(--muted);font-size:14px;margin-bottom:22px}
-  label{display:block;font-size:13px;color:var(--muted);margin:14px 0 6px}
-  input,select{width:100%;background:#0d1117;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:9px 12px;font-size:14px}
-  .row{display:flex;gap:12px}
-  .row > div{flex:1}
-  button{margin-top:18px;background:var(--accent);color:#0d1117;border:none;border-radius:8px;padding:10px 18px;font-weight:600;cursor:pointer}
-  .card{margin-top:22px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px}
-  .big{font-size:28px;font-weight:700;color:var(--ok)}
-  .muted{color:var(--muted);font-size:14px}
-  table{width:100%;border-collapse:collapse;font-size:14px;margin-top:8px}
-  td,th{padding:6px 4px;border-bottom:1px solid #21262d;text-align:left}
-  th{color:var(--muted);font-size:12px}
-  .find{font-size:13px;color:var(--muted);margin-top:6px}
-</style>
-</head>
-<body>
-<div class="wrap">
-  <h1>yuer</h1>
-  <div class="sub">记一次身高体重，看趋势，别忘了下一针</div>
+{% from "_macros.html" import shell, head, stats, card, tag, empty, note %}
+{% call shell("yuer", "成长与疫苗") %}
+{{ head("成长与疫苗", "记一次身高体重，看趋势，别忘了下一针") }}
 
-  <form method="post" action="/growth">
-    <div class="row">
-      <div>
-        <label>出生日期</label>
-        <input name="birth" type="text" required pattern="\d{4}-\d{2}-\d{2}" placeholder="2025-11-27" title="YYYY-MM-DD">
-      </div>
-      <div>
-        <label>性别</label>
-        <select name="sex"><option value="boy">男</option><option value="girl">女</option></select>
-      </div>
-    </div>
-    <div class="row">
-      <div><label>体重（kg）</label><input name="weight" placeholder="8.6"></div>
-      <div><label>身高（cm）</label><input name="height" placeholder="72"></div>
-    </div>
-    <button type="submit">看结果</button>
-  </form>
-
-  {% if result %}
-  <div class="card">
-    <div class="big">{{ result.months }} 月龄</div>
-    <div class="muted">
-      体重 {% if result.weight %}P{{ result.weight }}{% else %}—{% endif %}
-      · 身高 {% if result.height %}P{{ result.height }}{% else %}—{% endif %}
-    </div>
-    {% if result.vaccines %}
-    <table>
-      <tr><th>下一针</th><th>剂次</th><th>建议日期</th></tr>
-      {% for name, dose, plan in result.vaccines %}
-      <tr><td>{{ name }}</td><td>{{ dose }}</td><td>{{ plan }}</td></tr>
-      {% endfor %}
-    </table>
-    {% endif %}
-    {% for rule, msg in result.findings %}<div class="find">· {{ rule }} — {{ msg }}</div>{% endfor %}
+{% call card("记一次") %}
+<form method="post" action="/growth">
+  <div class="row">
+    <div class="field"><label>出生日期</label><input class="input" name="birth" type="text" required pattern="\d{4}-\d{2}-\d{2}" placeholder="2025-11-27" title="YYYY-MM-DD"></div>
+    <div class="field"><label>性别</label><select class="select" name="sex"><option value="boy">男</option><option value="girl">女</option></select></div>
   </div>
-  {% endif %}
-</div>
-</body>
-</html>
+  <div class="row" style="margin-top:12px">
+    <div class="field"><label>体重（kg）</label><input class="input" name="weight" placeholder="8.6"></div>
+    <div class="field"><label>身高（cm）</label><input class="input" name="height" placeholder="72"></div>
+    <div class="field field--auto"><button class="btn btn--primary" type="submit">看结果</button></div>
+  </div>
+</form>
+{% endcall %}
+
+{% if result %}
+<div class="section-gap"></div>
+{{ stats([
+  ("月龄", result.months, "月"),
+  ("体重百分位", "P" ~ result.weight if result.weight else "—", ""),
+  ("身高百分位", "P" ~ result.height if result.height else "—", ""),
+  ("待接种", result.vaccines|length, "针")
+]) }}
+
+{% if result.vaccines %}
+{% call card("下一针", result.vaccines|length ~ " 针") %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>疫苗</th><th>剂次</th><th>建议日期</th></tr></thead>
+      <tbody>
+        {% for name, dose, plan in result.vaccines %}
+        <tr><td class="strong">{{ name }}</td><td>{{ dose }}</td><td class="muted">{{ plan }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endcall %}
+{% endif %}
+
+{% if result.findings %}
+{% call card("需要留意") %}
+  <div class="stack">
+  {% for rule, msg in result.findings %}
+    <div class="list-row"><span class="t">{{ msg }}</span>{{ tag(rule, "warn") }}</div>
+  {% endfor %}
+  </div>
+{% endcall %}
+{% endif %}
+{% endif %}
+{% endcall %}

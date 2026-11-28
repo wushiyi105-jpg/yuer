@@ -1,0 +1,70 @@
+{# 18 仓共用页面骨架：只依赖 /static/ui.css，不引外部字体和图标库 #}
+{% macro shell(name, tagline, wide=false) -%}
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ name }} · {{ tagline }}</title>
+  <link rel="stylesheet" href="/static/ui.css">
+</head>
+<body>
+  <main class="shell{% if wide %} shell--wide{% endif %}">
+    <header class="topbar">
+      <div class="brand"><b>{{ name }}</b><span>{{ tagline }}</span></div>
+      <button class="btn btn--ghost" type="button" data-theme-toggle>深色</button>
+    </header>
+    {{ caller() }}
+    <footer class="foot">本地运行 · 数据不出机器</footer>
+  </main>
+  <script>
+    (function () {
+      var root = document.documentElement;
+      var btn = document.querySelector('[data-theme-toggle]');
+      var saved = localStorage.getItem('ui-theme');
+      if (saved) { root.dataset.theme = saved; btn.textContent = saved === 'dark' ? '浅色' : '深色'; }
+      btn.addEventListener('click', function () {
+        var next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+        root.dataset.theme = next;
+        localStorage.setItem('ui-theme', next);
+        btn.textContent = next === 'dark' ? '浅色' : '深色';
+      });
+    })();
+  </script>
+</body>
+</html>
+{%- endmacro %}
+
+{% macro head(title, desc="") -%}
+<div class="page-head">
+  <h1>{{ title }}</h1>
+  {% if desc %}<p>{{ desc }}</p>{% endif %}
+</div>
+{%- endmacro %}
+
+{% macro stats(items) -%}
+<div class="stats">
+  {% for k, v, unit in items %}
+  <div class="stat"><div class="k">{{ k }}</div><div class="v">{{ v }}{% if unit %}<small>{{ unit }}</small>{% endif %}</div></div>
+  {% endfor %}
+</div>
+{%- endmacro %}
+
+{% macro card(title, hint="") -%}
+<section class="card">
+  <div class="card__head"><h2>{{ title }}</h2>{% if hint %}<span class="hint">{{ hint }}</span>{% endif %}</div>
+  <div class="card__body">{{ caller() }}</div>
+</section>
+{%- endmacro %}
+
+{% macro tag(text, kind="") -%}
+<span class="tag{% if kind %} tag--{{ kind }}{% endif %}">{{ text }}</span>
+{%- endmacro %}
+
+{% macro empty(title, text="") -%}
+<div class="empty"><b>{{ title }}</b>{% if text %}{{ text }}{% endif %}</div>
+{%- endmacro %}
+
+{% macro note(text, warn=false) -%}
+<div class="note{% if warn %} note--warn{% endif %}">{{ text }}</div>
+{%- endmacro %}
