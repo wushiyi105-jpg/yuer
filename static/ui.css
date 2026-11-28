@@ -326,3 +326,24 @@ hr.sep { border: 0; border-top: 1px solid var(--border); margin: 24px 0; }
 .board-item .t { font-size: var(--fs-sm); font-weight: 600; }
 .board-item .why { color: var(--text-3); font-size: var(--fs-xs); margin-top: 2px; line-height: 1.5; }
 
+
+.daywall { display: grid; grid-template-columns: repeat(auto-fit, minmax(112px, 1fr)); gap: 8px; }
+.daytile { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px; background: var(--bg-subtle); min-height: 96px; }
+.daytile .d { font-size: var(--fs-2xs); color: var(--text-3); letter-spacing: .05em; }
+.daytile .shift { margin-top: 5px; font-size: var(--fs-xs); color: var(--text-2); display: flex; gap: 5px; }
+.daytile .shift b { color: var(--text); font-weight: 600; min-width: 28px; }
+.offers { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+.offer { border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; background: var(--bg-subtle); }
+.offer .co { font-size: var(--fs-sm); font-weight: 600; }
+.offer .amount { margin: 6px 0 2px; font-size: var(--fs-2xl); font-weight: 650; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.offer .amount small { font-size: var(--fs-xs); font-weight: 500; color: var(--text-3); margin-left: 3px; }
+.offer dl { margin: 12px 0 0; display: grid; grid-template-columns: 1fr auto; gap: 5px; font-size: var(--fs-xs); }
+.offer dt { color: var(--text-3); }
+.offer dd { margin: 0; color: var(--text); font-variant-numeric: tabular-nums; }
+.ticket { border: 2px dashed var(--border-3); border-radius: var(--radius); padding: 16px; background: var(--bg-subtle); }
+.ticket .label { font-size: var(--fs-2xs); letter-spacing: .12em; color: var(--text-3); text-transform: uppercase; }
+.ticket .price { font-family: var(--mono); font-size: var(--fs-3xl); font-weight: 650; letter-spacing: -.03em; margin-top: 4px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+
+
+.row-end { display: flex; gap: 8px; align-items: center; margin-left: auto; flex: none; }

@@ -7,6 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{ name }} · {{ tagline }}</title>
   <link rel="stylesheet" href="/static/ui.css">
+  <link rel="stylesheet" href="/static/theme.css">
 </head>
 <body>
   <main class="shell{% if wide %} shell--wide{% endif %}">
@@ -68,3 +69,4 @@
 {% macro note(text, warn=false) -%}
 <div class="note{% if warn %} note--warn{% endif %}">{{ text }}</div>
 {%- endmacro %}
+

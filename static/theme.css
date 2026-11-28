@@ -1,0 +1,29 @@
+:root {
+  --bg: #FAF8F1;
+  --bg-subtle: #F4F0E5;
+  --bg-muted: #E9E3D4;
+  --card: #FFFFFF;
+  --text: #242522;
+  --text-2: #51534b;
+  --text-3: #65675c;
+  --text-4: #707167;
+  --border: #E5E0D2;
+  --border-2: #D6D0BE;
+  --border-3: #C3BBA4;
+  --accent: #3F6C7D;
+  --accent-soft: #E7F2F5;
+  --accent-ink: #345C6B;
+  --radius: 14px;
+  --radius-sm: 10px;
+  --radius-lg: 20px;
+}
+:root[data-theme="dark"] {
+  --accent: #8FC7D6;
+  --accent-soft: #153039;
+  --accent-ink: #C4E5EC;
+}
+.page-head h1 { font-family: "Songti SC", "SimSun", serif; }
+.big { color: var(--accent); }
+.btn { border-radius: 999px; }
+
+
